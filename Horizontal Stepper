@@ -1,0 +1,86 @@
+//Horizontal Actuator Code to control NEMA23 Stepper with Tic 36v4
+
+#include <Tic.h>
+#include <Pushbutton.h>
+
+TicI2C tic; 
+
+Pushbutton buttonCW(2);
+Pushbutton buttonCCW(3);
+
+//Define moving and stopped stepper current
+//milliAmps
+const uint16_t currentLimitWhileMoving = 3000;
+const uint16_t currentLimitWhileStopped = 2000;
+
+enum class Mode {
+  Off,
+  Velocity
+};
+auto mode = Mode::Off;
+
+void setup() 
+{ 
+  //specific Tic
+  tic.setProduct(TicProduct::Tic36v4);
+
+  // Set up I2C.
+  Wire.begin();
+
+  // Give the Tic some time to start up.
+  delay(20);
+}
+
+void loop() 
+{
+  //constant current (2 Amps)
+  tic.setCurrentLimit(currentLimitWhileStopped);
+  
+  //Set current limit and wait a little
+//  tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+//  delay(10);
+
+  if (buttonCW.isPressed() && buttonCCW.isPressed())
+  {
+    // 2 Amps
+    tic.setCurrentLimit(currentLimitWhileStopped)
+
+    // Both button CW and button CCW are pressed: do not move
+    tic.setTargetVelocity(0);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+  else if (buttonCW.isPressed())
+  {
+    //3 Amps
+    tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+    delay(10);
+
+    // buttonCW is pressed: move CW steps per second
+    tic.setTargetVelocity(10000000);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+  else if (buttonCCW.isPressed())
+  {
+    //3 Amps 
+    tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+    delay(10);
+
+    // buttonCCW is pressed: move CCW steps per second
+    tic.setTargetVelocity(-10000000);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+  else
+  {
+    // Neither CW nor CCW are pressed: do not move
+    //2 Amps
+    if (mode == Mode::Velocity)
+    {
+      tic.setTargetVelocity(0);
+    }
+  }
+
+  tic.resetCommandTimeout();
+}
