@@ -43,7 +43,7 @@ void loop()
   if (buttonCW.isPressed() && buttonCCW.isPressed())
   {
     // 2 Amps
-    tic.setCurrentLimit(currentLimitWhileStopped)
+    tic.setCurrentLimit(currentLimitWhileStopped);
 
     // Both button CW and button CCW are pressed: do not move
     tic.setTargetVelocity(0);
