@@ -1,0 +1,133 @@
+//Both Actuator Code to control NEMA23 Stepper with Tic 36v4
+
+#include <Tic.h>
+#include <Pushbutton.h>
+
+TicI2C tic; 
+
+Pushbutton HorizButtonCW(2);
+Pushbutton HorizButtonCCW(3);
+Pushbutton VertButtonCW(4);
+Pushbutton VertButtonCCW(5);
+
+//Define moving and stopped stepper current
+//milliAmps
+const uint16_t currentLimitWhileMoving = 3000;
+const uint16_t currentLimitWhileStopped = 2000;
+
+enum class Mode {
+  Off,
+  Velocity
+};
+auto mode = Mode::Off;
+
+void setup() 
+{ 
+  //specific Tic
+  tic.setProduct(TicProduct::Tic36v4);
+
+  // Set up I2C.
+  Wire.begin();
+
+  // Give the Tic some time to start up.
+  delay(20);
+}
+
+void loop() 
+{
+  //constant current (2 Amps)
+  tic.setCurrentLimit(currentLimitWhileStopped);
+  
+  //Set current limit and wait a little
+//  tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+//  delay(10);
+
+//VERTICAL
+  if (VertButtonCW.isPressed() && VertButtonCCW.isPressed())
+  {
+    // 2 Amps
+    tic.setCurrentLimit(currentLimitWhileStopped);
+
+    // Both Vertical button CW and button CCW are pressed: do not move
+    tic.setTargetVelocity(0);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+
+//HORIZONTAL 
+  else if (HorizButtonCW.isPressed() && HorizButtonCCW.isPressed())
+  {
+    // 2 Amps
+    tic.setCurrentLimit(currentLimitWhileStopped);
+
+    // Both Horizontal button CW and button CCW are pressed: do not move
+    tic.setTargetVelocity(0);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+
+//VERTICAL
+  else if (VertButtonCW.isPressed())
+  {
+    //3 Amps
+    tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+    delay(10);
+
+    // Vertical buttonCW is pressed: move CW steps per second
+    tic.setTargetVelocity(50000000);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+
+//HORIZONTAL
+  else if (HorizButtonCW.isPressed())
+  {
+    //3 Amps
+    tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+    delay(10);
+
+    // Horizontal buttonCW is pressed: move CW steps per second
+    tic.setTargetVelocity(10000000);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+
+//VERTICAL
+  else if (VertButtonCCW.isPressed())
+  {
+    //3 Amps 
+    tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+    delay(10);
+
+    // Vertical buttonCCW is pressed: move CCW steps per second
+    tic.setTargetVelocity(-50000000);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+  
+//HORIZONTAL
+    else if (HorizButtonCCW.isPressed())
+  {
+    //3 Amps 
+    tic.setCurrentLimit(currentLimitWhileMoving); //starts current
+    delay(10);
+
+    // buttonCCW is pressed: move CCW steps per second
+    tic.setTargetVelocity(-10000000);
+    tic.exitSafeStart();
+    mode = Mode::Velocity;
+  }
+
+//BOTH STEPPERS
+  else
+  {
+    // Neither Horizontal/Vertical CW nor CCW are pressed: do not move
+    //2 Amps
+    if (mode == Mode::Velocity)
+    {
+      tic.setTargetVelocity(0);
+    }
+  }
+
+  tic.resetCommandTimeout();
+}
