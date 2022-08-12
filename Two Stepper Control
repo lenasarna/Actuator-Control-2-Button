@@ -5,10 +5,10 @@
 
 TicI2C tic; 
 
-Pushbutton HorizButtonCW(2);
-Pushbutton HorizButtonCCW(3);
-Pushbutton VertButtonCW(4);
-Pushbutton VertButtonCCW(5);
+Pushbutton HorizButtonCW(6);
+Pushbutton HorizButtonCCW(7);
+Pushbutton VertButtonCW(2);
+Pushbutton VertButtonCCW(3);
 
 //Define moving and stopped stepper current
 //milliAmps
